@@ -1,6 +1,6 @@
 <div class="ComparisonViewer-header row">
   <div class="ComparisonViewer-title" title="{{comparison.headSnapshot.name}}">
-    <span>{{comparison.headSnapshot.name}}</span>
+    <a href={{comparisonUrl}} {{action "clickOnTitle"}}>{{comparison.headSnapshot.name}}</a>
   </div>
   <div class="ComparisonViewer-details">
     {{comparison-status comparison=comparison}}

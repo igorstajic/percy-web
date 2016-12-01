@@ -23,6 +23,10 @@ export default Ember.Component.extend({
   isNotExpanded: Ember.computed.not('isExpanded'),
   isActionable: Ember.computed.or('isNotExpanded', 'isMultiColumnMode'),
 
+  comparisonUrl: Ember.computed(function() {
+    return this.getComparisonUrl();
+  }),
+
   classNames: ['ComparisonViewer'],
   classNameBindings: [
     'isFocus:ComparisonViewer--focus',
@@ -52,7 +56,6 @@ export default Ember.Component.extend({
   teardown: Ember.on('willDestroyElement', function() {
     this.send('unregisterChild', this);
   }),
-
   click() {
     if (this.get('isNotExpanded')) {
       this.set('isExpanded', true);
@@ -61,11 +64,15 @@ export default Ember.Component.extend({
     }
   },
   actions: {
+    clickOnTitle() { /* nothing to do propagetes to normal click evnet handler */ },
     registerChild() {
       this.get('registerChild')(this);
     },
     unregisterChild() {
       this.get('unregisterChild')(this);
+    },
+    scrollToMe() {
+      this.get('scrollTo')(this);
     },
     toggleOverlay() {
       this.toggleProperty('isOverlayEnabled');
@@ -80,10 +87,9 @@ export default Ember.Component.extend({
       this.set('isTogglingFullWidth', true);
       this.toggleProperty('isToggledFullWidth');
       this.set('showNoDiffSnapshot', true);
-
       Ember.run.next(() => {
         this.set('isTogglingFullWidth', false);
-        window.scrollTo(0, this.$().offset().top - 210);
+        this.send('scrollToMe');
       });
     },
   },

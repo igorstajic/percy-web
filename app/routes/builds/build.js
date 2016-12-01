@@ -12,5 +12,5 @@ export default Ember.Route.extend({
     if (!build.get('isExpired')) {
       build.get('comparisons').reload();
     }
-  },
+  }
 });

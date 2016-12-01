@@ -5,9 +5,13 @@ export default Ember.Component.extend({
   selectedNumColumns: null,
   comparisons: null,
   comparisonComponents: null,
+  activeComparison: null,
+  updateActiveComparison: null,
 
   selectedComparisonIndex: -1,
   lastComparisonIndex: null,
+
+  scrollToComponentAfterRender: null,
 
   isDefaultExpanded: Ember.computed('comparisons', function() {
     return this.get('comparisons.length') < 150;
@@ -21,7 +25,6 @@ export default Ember.Component.extend({
   comparisonListMode: Ember.computed('selectedNumColumns', function() {
     return 'ComparisonList--' + this.get('selectedNumColumns') + 'col';
   }),
-
   setupKeyHandlers: Ember.on('didInsertElement', function() {
     Ember.$(document).bind('keydown.comparisons', function(e) {
       if (e.keyCode === 39) {  // right arrow
@@ -34,18 +37,45 @@ export default Ember.Component.extend({
   destroyKeyHandlers: Ember.on('willDestroyElement', function() {
     Ember.$(document).unbind('keydown.comparisons');
   }),
-
+  scrollToSelected: Ember.on('didRender', function() {
+    // Wait for the views changes to render, then calculate the right scroll position.
+    let component = this.get('scrollToComponentAfterRender');
+    if (component) {
+      this.set('scrollToComponentAfterRender', null);
+      // TODO: this is a hack, for the initial render
+      Ember.run.next(() => {
+        setTimeout(function() {
+          window.scrollTo(0, component.$().offset().top - 210);
+        }, 100);
+      });
+    }
+  }),
   actions: {
+    comparisonUrl(comparison) {
+      return `?comparison=${comparison.id}`;
+    },
     registerChild(component) {
       if (!this.get('comparisonComponents')) {
         this.set('comparisonComponents', Ember.ArrayProxy.create({content: Ember.A()}));
       }
       this.get('comparisonComponents').pushObject(component);
+      if (this.get('activeComparison')) {
+        let index = this.get('comparisonComponents.length') - 1;
+        if (this.get('activeComparison') == this.get('sortedComparisons').objectAt(index).get('id')) {
+          var lastIndex = this.get('selectedComparisonIndex');
+          this.set('lastComparisonIndex', lastIndex);
+          this.set('selectedComparisonIndex', index);
+          this.send('updateSelectedComparison');
+        }
+      }
     },
     unregisterChild(component) {
       // Assume all components are being destroyed and we should reset the selection. TODO: improve.
       this.set('selectedComparisonIndex', 0);
       this.get('comparisonComponents').removeObject(component);
+    },
+    scrollToChild(component) {
+      this.set('scrollToComponentAfterRender', component);
     },
     nextComparison() {
       var index = this.get('selectedComparisonIndex');
@@ -77,6 +107,8 @@ export default Ember.Component.extend({
       var selectedComponent = comparisonComponents.objectAt(selectedIndex);
       var lastIndex = this.get('lastComparisonIndex');
 
+      this.get('updateActiveComparison')(selectedComponent.get('comparison.id'))
+
       // Expand the selected component.
       selectedComponent.set('isExpanded', true);
       selectedComponent.set('showNoDiffSnapshot', true);
@@ -89,10 +121,7 @@ export default Ember.Component.extend({
         lastComponent.set('isFocus', false);
       }
 
-      // Wait for the views changes above to render, then calculate the right scroll position.
-      Ember.run.next(function() {
-        window.scrollTo(0, selectedComponent.$().offset().top - 210);
-      });
+      this.set('scrollToComponentAfterRender', selectedComponent);
     },
   }
 });

@@ -11,11 +11,13 @@ describe('Acceptance: Build', function() {
     let project = server.create('project', {name: 'with builds', organization});
     let build = server.create('build', {project, createdAt: moment().subtract(2, 'minutes') });
     server.create('comparison', {build});
-    server.create('comparison', 'wasAdded', {build});
+    this.comparison = server.create('comparison', 'wasAdded', {build});
     server.create('comparison', 'wasRemoved', {build});
     server.create('comparison', 'same', {build});
     this.project = project;
+    this.build = build;
   });
+
   it('shows the build page', function() {
     visit(`/${this.project.fullSlug}`);
     andThen(() => {
@@ -30,5 +32,18 @@ describe('Acceptance: Build', function() {
 
     click('.ComparisonModePicker button')
     percySnapshot(this.test.fullTitle() + ' | Overview');
+  });
+
+  it('jumps to comparsion for query params', function() {
+    visit(`/${this.project.fullSlug}/builds/${this.build.id}?comparison=${this.comparison.id}`);
+    andThen(() => {
+      expect(currentPath()).to.equal('organization.project.builds.build');
+      expect(
+        find('.ComparisonViewer.ComparisonViewer--focus .ComparisonViewer-title a').text()
+      ).to.equal(this.comparison.headSnapshot.name);
+      expect('')
+    });
+
+    percySnapshot(this.test.fullTitle());
   });
 });

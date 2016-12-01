@@ -2,6 +2,8 @@ import Ember from 'ember';
 
 export default Ember.Component.extend({
   build: null,
+  activeComparison: null,
+  updateActiveComparison: null,
   classNames: ['BuildContainer'],
   selectedWidths: Ember.computed('build.comparisonWidths', function() {
     // Use the largest width by default.
@@ -30,6 +32,9 @@ export default Ember.Component.extend({
     }
   }),
   actions: {
+    updateActiveComparison(comprisonId) {
+      this.get('updateActiveComparison')(comprisonId);
+    },
     updateSelectedWidths(widths) {
       this.set('selectedWidths', widths);
     },

@@ -60,4 +60,3 @@ export default Ember.Route.extend(ApplicationRouteMixin, {
     },
   },
 });
-

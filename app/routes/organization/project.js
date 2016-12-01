@@ -7,4 +7,3 @@ export default Ember.Route.extend(AuthenticatedRouteMixin, {
     return this.store.findRecord('project', `${organizationSlug}/${params.project_id}`);
   },
 });
-
