@@ -42,12 +42,7 @@ export default Ember.Component.extend({
     let component = this.get('scrollToComponentAfterRender');
     if (component) {
       this.set('scrollToComponentAfterRender', null);
-      // TODO: this is a hack, for the initial render
-      Ember.run.next(() => {
-        setTimeout(function() {
-          window.scrollTo(0, component.$().offset().top - 210);
-        }, 100);
-      });
+      window.scrollTo(0, component.$().offset().top - 210);
     }
   }),
   actions: {
